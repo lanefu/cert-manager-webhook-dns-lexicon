@@ -103,7 +103,9 @@ func lexiconCmd(cmd lexiconCommandOptions) (bool, error) {
 		fmt.Println("STDERR output: ", stderr)
 	}
 
-	resultStr := strings.TrimSpace(output.String())
+	lines := strings.Split(output.String(), "\n")
+
+	resultStr := strings.TrimSpace(lines[len(lines)-1])
 
 	fmt.Println("lexicon output:", resultStr)
 
