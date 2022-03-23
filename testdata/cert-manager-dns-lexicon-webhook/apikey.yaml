@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api-secret
+type: Opaque
+stringData:
+  key: b85edc4b-4a54-4bb3-a5c5-ad315f996780
+  secret: 18eee43e-1150-45ad-9930-72efb384f5e6
