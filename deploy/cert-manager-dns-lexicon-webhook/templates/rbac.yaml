@@ -1,12 +1,59 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ include "example-webhook.fullname" . }}
+  name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}
   labels:
-    app: {{ include "example-webhook.name" . }}
-    chart: {{ include "example-webhook.chart" . }}
+    app: {{ include "cert-manager-dns-lexicon-webhook.name" . }}
+    chart: {{ include "cert-manager-dns-lexicon-webhook.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}
+  labels:
+    app: {{ include "cert-manager-dns-lexicon-webhook.name" . }}
+    chart: {{ include "cert-manager-dns-lexicon-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - "secrets"
+      - "configmaps"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  # Required since k8s v1.20
+  - apiGroups:
+      - "flowcontrol.apiserver.k8s.io"
+    resources:
+      - 'prioritylevelconfigurations'
+      - 'flowschemas'
+    verbs:
+      - 'list'
+      - 'watch'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}
+  labels:
+    app: {{ include "cert-manager-dns-lexicon-webhook.name" . }}
+    chart: {{ include "cert-manager-dns-lexicon-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}
+    namespace: {{ .Release.Namespace }}
 ---
 # Grant the webhook permission to read the ConfigMap containing the Kubernetes
 # apiserver's requestheader-ca-certificate.
@@ -14,11 +61,11 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ include "example-webhook.fullname" . }}:webhook-authentication-reader
+  name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}:webhook-authentication-reader
   namespace: kube-system
   labels:
-    app: {{ include "example-webhook.name" . }}
-    chart: {{ include "example-webhook.chart" . }}
+    app: {{ include "cert-manager-dns-lexicon-webhook.name" . }}
+    chart: {{ include "cert-manager-dns-lexicon-webhook.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 roleRef:
@@ -28,7 +75,7 @@ roleRef:
 subjects:
   - apiGroup: ""
     kind: ServiceAccount
-    name: {{ include "example-webhook.fullname" . }}
+    name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}
     namespace: {{ .Release.Namespace }}
 ---
 # apiserver gets the auth-delegator role to delegate auth decisions to
@@ -36,10 +83,10 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "example-webhook.fullname" . }}:auth-delegator
+  name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}:auth-delegator
   labels:
-    app: {{ include "example-webhook.name" . }}
-    chart: {{ include "example-webhook.chart" . }}
+    app: {{ include "cert-manager-dns-lexicon-webhook.name" . }}
+    chart: {{ include "cert-manager-dns-lexicon-webhook.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 roleRef:
@@ -49,17 +96,17 @@ roleRef:
 subjects:
   - apiGroup: ""
     kind: ServiceAccount
-    name: {{ include "example-webhook.fullname" . }}
+    name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}
     namespace: {{ .Release.Namespace }}
 ---
 # Grant cert-manager permission to validate using our apiserver
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "example-webhook.fullname" . }}:domain-solver
+  name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}:domain-solver
   labels:
-    app: {{ include "example-webhook.name" . }}
-    chart: {{ include "example-webhook.chart" . }}
+    app: {{ include "cert-manager-dns-lexicon-webhook.name" . }}
+    chart: {{ include "cert-manager-dns-lexicon-webhook.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 rules:
@@ -73,16 +120,16 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "example-webhook.fullname" . }}:domain-solver
+  name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}:domain-solver
   labels:
-    app: {{ include "example-webhook.name" . }}
-    chart: {{ include "example-webhook.chart" . }}
+    app: {{ include "cert-manager-dns-lexicon-webhook.name" . }}
+    chart: {{ include "cert-manager-dns-lexicon-webhook.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ include "example-webhook.fullname" . }}:domain-solver
+  name: {{ include "cert-manager-dns-lexicon-webhook.fullname" . }}:domain-solver
 subjects:
   - apiGroup: ""
     kind: ServiceAccount
