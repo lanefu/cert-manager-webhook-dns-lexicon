@@ -84,8 +84,48 @@ help with any troubleshooting.
 Installation
 ------------
 
-    helm upgrade -i -n cert-manager ./deploy/cert-manager-dns-lexicon-webhook --set groupName 'dns-lexicon.mycompany.com'
+    helm -n cert-manager upgrade -i dns-lexicon-webhook ./deploy/cert-manager-dns-lexicon-webhook --set groupName='dns-lexicon.mycompany.com'
 
+And then create a ClusterIssuer, something like this:
+
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: namecheap-api-key
+      namespace: cert-manager
+    type: Opaque
+    stringData:
+      key: myusername
+      secret: myapikey
+    ---
+    apiVersion: cert-manager.io/v1
+    kind: ClusterIssuer
+    metadata:
+      name: namecheap-lexicon
+    spec:
+      acme:
+        email: me@company.tld
+        privateKeySecretRef:
+          name: mySecretKeySecret
+        server: https://acme-v02.api.letsencrypt.org/directory
+        solvers:
+        - dns01:
+            cnameStrategy: Follow
+            webhook:
+              config:
+                apiKeyRef:
+                  name: namecheap-api-key
+                  key: key
+                apiSecretRef:
+                  name: namecheap-api-key
+                  key: secret
+                production: true
+                provider: namecheap
+                ttl: 600
+              groupName: dns-lexicon.company.com
+              solverName: lexicon
+
+You should be able to create additional ones for each DNS provider you need using this basic template
 
 Credits
 -------
