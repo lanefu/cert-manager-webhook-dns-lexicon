@@ -8,6 +8,7 @@
     "name": "api-secret",
     "key": "secret"
   },
+  "usePassword": false,
   "ttl": 300,
   "sandbox": true
 }

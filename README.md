@@ -121,11 +121,15 @@ And then create a ClusterIssuer, something like this:
                   key: secret
                 production: true
                 provider: namecheap
+                usePassword: false
                 ttl: 600
               groupName: dns-lexicon.company.com
               solverName: lexicon
 
-You should be able to create additional ones for each DNS provider you need using this basic template
+You should be able to create additional ones for each DNS provider you need using this basic template. Note that some providers
+use the `--auth-password` parameter instead of `--auth-token`; in that case you need to set `usePassword: true` in the webhook
+configuration to make it work. The only way I know to check that easily is to run `lexicon <provider> --help` and check the
+available arguments, but this project does not do that for you at this time.
 
 Credits
 -------

@@ -14,4 +14,4 @@
 # Make artifacts
 _out
 _test
-testdata/lexicon/apikey.yaml
+testdata/*/apikey.yaml

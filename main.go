@@ -25,10 +25,11 @@ import (
 var GroupName = os.Getenv("GROUP_NAME")
 
 type lexiconCommandOptions struct {
-	Provider  string
-	authUser  string
-	authToken string
-	command   []string
+	Provider    string
+	authUser    string
+	authToken   string
+	command     []string
+	usePassword bool
 }
 type DNSLexiconDnsRecord struct {
 	RecordType string `json:"type"`
@@ -72,10 +73,16 @@ type DNSLexiconCredentials struct {
 // }
 
 func lexiconCmd(cmd lexiconCommandOptions) (bool, error) {
+
+	pwParam := "--auth-token"
+	if cmd.usePassword {
+		pwParam = "--auth-password"
+	}
+
 	var cmdArgs = []string{
 		cmd.Provider,
 		"--auth-username", cmd.authUser,
-		"--auth-token", cmd.authToken,
+		pwParam, cmd.authToken,
 	}
 	var err error
 	cmdArgs = append(cmdArgs, cmd.command...)
@@ -94,13 +101,13 @@ func lexiconCmd(cmd lexiconCommandOptions) (bool, error) {
 
 	err = lexCmd.Run()
 
+	if len(stderr.String()) > 0 {
+		fmt.Println("STDERR output: ", stderr.String())
+	}
+
 	if err != nil {
 		printError(err)
 		return false, fmt.Errorf("error running lexicon command. %v", err)
-	}
-
-	if stderr.Len() > 0 {
-		fmt.Println("STDERR output: ", stderr)
 	}
 
 	lines := strings.Split(strings.TrimSpace(output.String()), "\n")
@@ -176,6 +183,7 @@ type DNSLexiconDNSProviderConfig struct {
 	APISecretRef certmgrv1.SecretKeySelector `json:"apiSecretRef"`
 	TTL          *int                        `json:"ttl"`
 	Sandbox      bool                        `json:"sandbox"`
+	UsePassword  bool                        `json:"usePassword"`
 	//Secrets directly in config - not recomended -> use secrets!
 	APIKey    string `json:"apiKey"`
 	APISecret string `json:"apiSecret"`
@@ -210,9 +218,10 @@ func (c *DNSLexiconDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) err
 	// set a record in the DNS provider
 
 	success, err := lexiconCmd(lexiconCommandOptions{
-		authUser:  cfg.APIKey,
-		authToken: cfg.APISecret,
-		Provider:  cfg.Provider,
+		authUser:    cfg.APIKey,
+		authToken:   cfg.APISecret,
+		Provider:    cfg.Provider,
+		usePassword: cfg.UsePassword,
 		command: []string{
 			"create",
 			ch.ResolvedZone,
@@ -249,9 +258,10 @@ func (c *DNSLexiconDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) err
 	// clears a record in the DNS provider
 
 	lexiconCmd(lexiconCommandOptions{
-		authUser:  cfg.APIKey,
-		authToken: cfg.APISecret,
-		Provider:  cfg.Provider,
+		authUser:    cfg.APIKey,
+		authToken:   cfg.APISecret,
+		Provider:    cfg.Provider,
+		usePassword: cfg.UsePassword,
 		command: []string{
 			"delete",
 			ch.ResolvedZone,
