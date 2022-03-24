@@ -239,7 +239,7 @@ func (c *DNSLexiconDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) err
 // This is in order to facilitate multiple DNS validations for the same domain
 // concurrently.
 func (c *DNSLexiconDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
-	fmt.Printf("\n>>>Present: fqdn:[%s] zone:[%s]\n", ch.ResolvedFQDN, ch.ResolvedZone)
+	fmt.Printf("\n>>>Cleanup: fqdn:[%s] zone:[%s]\n", ch.ResolvedFQDN, ch.ResolvedZone)
 	cfg, err := c.loadConfig(ch)
 	if err != nil {
 		printError(err)
