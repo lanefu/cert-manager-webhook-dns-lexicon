@@ -230,8 +230,7 @@ func (c *DNSLexiconDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) err
 			ch.ResolvedFQDN,
 			"--ttl",
 			strconv.Itoa(*cfg.TTL),
-			"--content",
-			ch.Key,
+			"--content=" + ch.Key,
 		},
 	})
 
