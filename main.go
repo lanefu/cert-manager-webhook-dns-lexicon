@@ -10,16 +10,14 @@ import (
 	"strconv"
 	"strings"
 
-	certmgrv1 "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-
-	//"k8s.io/client-go/kubernetes"
-
 	"k8s.io/client-go/rest"
 
-	"github.com/jetstack/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
-	"github.com/jetstack/cert-manager/pkg/acme/webhook/cmd"
+	certmanagermetav1 "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/cert-manager/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
+	"github.com/cert-manager/cert-manager/pkg/acme/webhook/cmd"
 )
 
 var GroupName = os.Getenv("GROUP_NAME")
@@ -179,11 +177,11 @@ type DNSLexiconDNSProviderConfig struct {
 	// Provider to use with DNS lexicon
 	Provider string `json:"provider"`
 
-	APIKeyRef    certmgrv1.SecretKeySelector `json:"apiKeyRef"`
-	APISecretRef certmgrv1.SecretKeySelector `json:"apiSecretRef"`
-	TTL          *int                        `json:"ttl"`
-	Sandbox      bool                        `json:"sandbox"`
-	UsePassword  bool                        `json:"usePassword"`
+	APIKeyRef    certmanagermetav1.SecretKeySelector `json:"apiKeyRef"`
+	APISecretRef certmanagermetav1.SecretKeySelector `json:"apiSecretRef"`
+	TTL          *int                                `json:"ttl"`
+	Sandbox      bool                                `json:"sandbox"`
+	UsePassword  bool                                `json:"usePassword"`
 	//Secrets directly in config - not recomended -> use secrets!
 	APIKey    string `json:"apiKey"`
 	APISecret string `json:"apiSecret"`
