@@ -84,7 +84,12 @@ help with any troubleshooting.
 Installation
 ------------
 
-    helm -n cert-manager upgrade -i dns-lexicon-webhook ./deploy/cert-manager-dns-lexicon-webhook --set groupName='dns-lexicon.mycompany.com'
+### Using public helm chart
+```bash
+helm repo add cert-manager-dns-lexicon-webhook https://someblackmagic.github.io/cert-manager-dns-lexicon-webhook/
+# Replace the groupName value with your desired domain
+helm install --namespace cert-manager cert-manager-dns-lexicon-webhook cert-manager-dns-lexicon-webhook/cert-manager-dns-lexicon-webhook --set groupName=acme.bunny.net
+```
 
 And then create a ClusterIssuer, something like this:
 
