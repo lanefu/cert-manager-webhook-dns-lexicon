@@ -86,9 +86,9 @@ Installation
 
 ### Using public helm chart
 ```bash
-helm repo add cert-manager-dns-lexicon-webhook https://someblackmagic.github.io/cert-manager-dns-lexicon-webhook/
+helm repo add cert-manager-webhook-dns-lexicon https://someblackmagic.github.io/cert-manager-webhook-dns-lexicon/
 # Replace the groupName value with your desired domain
-helm install --namespace cert-manager cert-manager-dns-lexicon-webhook cert-manager-dns-lexicon-webhook/cert-manager-dns-lexicon-webhook --set groupName=acme.bunny.net
+helm install --namespace cert-manager cert-manager-webhook-dns-lexicon cert-manager-webhook-dns-lexicon/cert-manager-webhook-dns-lexicon --set groupName=acme.bunny.net
 ```
 
 And then create a ClusterIssuer, something like this:

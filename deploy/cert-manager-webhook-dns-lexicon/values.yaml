@@ -13,7 +13,7 @@ certManager:
   serviceAccountName: cert-manager
 
 image:
-  repository: someblackmagic/cert-manager-dns-lexicon-webhook
+  repository: someblackmagic/cert-manager-webhook-dns-lexicon
   tag: latest
   pullPolicy: IfNotPresent
 
