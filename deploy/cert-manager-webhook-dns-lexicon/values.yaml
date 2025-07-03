@@ -13,7 +13,7 @@ certManager:
   serviceAccountName: cert-manager
 
 image:
-  repository: ghcr.io/someblackmagic/cert-manager-webhook-dns-lexicon
+  repository: ghcr.io/lanefu/cert-manager-webhook-dns-lexicon
   tag: latest
   pullPolicy: IfNotPresent
 
