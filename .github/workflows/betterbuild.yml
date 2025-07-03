@@ -1,0 +1,148 @@
+# This GitHub Actions workflow demonstrates a multi-stage process:
+# 1. Cross-compile a Go application for various architectures.
+# 2. Upload each compiled binary as a GitHub artifact.
+# 3. In a separate job, download the artifacts.
+# 4. Build a multi-architecture Docker image using the downloaded artifacts.
+
+name: Go Cross-Compile and Multi-Arch Docker Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # ==================================================================
+  #  Build Job: Cross-compiles the Go application for multiple targets
+  # ==================================================================
+  build:
+    name: Build for ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ubuntu-latest
+    strategy:
+      # The matrix defines all the combinations of OS and Architecture to build for.
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+        exclude:
+          # Exclude combinations that are not needed or not common.
+          - goos: windows
+            goarch: arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22" # Specify your Go version
+
+      - name: Compile the application
+        # The GOOS and GOARCH environment variables are used by the Go compiler
+        # to specify the target operating system and architecture.
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          # The output binary is named to include the OS and architecture.
+          # For Windows, we add the .exe extension.
+          BINARY_NAME="cert-manager-webhook-dns-lexicon-${{ matrix.goos }}-${{ matrix.goarch }}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            BINARY_NAME+=".exe"
+          fi
+          CGO_ENABLED=0 go build -v -o "${BINARY_NAME}" -ldflags '-w -extldflags "-static"' .
+
+      - name: Upload artifact
+        # This action uploads the compiled binary as an artifact.
+        # The artifact will be available to other jobs in the workflow.
+        uses: actions/upload-artifact@v4
+        with:
+          name: cert-manager-webhook-dns-lexicon-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: cert-manager-webhook-dns-lexicon-${{ matrix.goos }}-${{ matrix.goarch }}* # Use wildcard for .exe
+          retention-days: 1 # Keep artifacts for 1 day
+
+  # ==================================================================
+  #  Docker Build Job: Builds a multi-arch Docker image
+  # ==================================================================
+  build-docker-multi-arch:
+    name: Build Multi-Arch Docker Image
+    runs-on: ubuntu-latest
+    # This job depends on the successful completion of the 'build' job.
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        # QEMU is needed to emulate different CPU architectures,
+        # allowing us to build images for ARM on an x86 runner.
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        # Buildx is a Docker CLI plugin that extends the docker build command
+        # with full support for the features provided by Moby BuildKit.
+        # It is required for multi-architecture builds.
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        # You must be logged in to a registry to push images.
+        # This uses a token automatically provided by GitHub Actions.
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create temporary directory for artifacts
+        run: mkdir -p artifacts
+
+      - name: Download all build artifacts
+        # This action downloads all artifacts uploaded by the 'build' job.
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Display downloaded artifacts structure
+        run: ls -R artifacts/
+
+      - name: Prepare build contexts
+        # We need to create separate directories for each architecture's build context.
+        # Each directory will contain the appropriate binary and a Dockerfile.
+        run: |
+          # AMD64 context
+          mkdir -p build-context/linux-amd64
+          cp artifacts/cert-manager-webhook-dns-lexicon-linux-amd64/cert-manager-webhook-dns-lexicon-linux-amd64 build-context/linux-amd64/app
+
+          # ARM64 context
+          mkdir -p build-context/linux-arm64
+          cp artifacts/cert-manager-webhook-dns-lexicon-linux-arm64/cert-manager-webhook-dns-lexicon-linux-arm64 build-context/linux-arm64/app
+
+      - name: Build and push multi-architecture image
+        # This is the core step for building the multi-arch image.
+        # The --platform flag specifies the target platforms.
+        # The --push flag tells buildx to push the image to the registry.
+        # We provide multiple build contexts, one for each platform.
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --tag ghcr.io/${{ github.repository_owner }}/my-go-app:latest \
+            --push \
+            --file - ./build-context <<EOF
+          # This is a multi-stage Dockerfile provided via a heredoc.
+          # It uses a scratch base image for a minimal final image size.
+          # The ARG is used to select the correct build context for each platform.
+          ARG TARGETPLATFORM
+          FROM --platform=\$TARGETPLATFORM python:3.12-alpine
+
+          RUN apk add --no-cache ca-certificates build-base libffi-dev
+          RUN pip install dns-lexicon
+
+          # Copy the compiled application binary into the image.
+          COPY ./app /webhook
+
+          # Set the entrypoint for the container.
+          ENTRYPOINT ["/webhook"]
+          EOF
