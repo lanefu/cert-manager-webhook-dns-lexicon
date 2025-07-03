@@ -1,0 +1,19 @@
+FROM python:3.12-alpine
+
+ARG APP_NAME
+ARG TARGETOS
+ARG TARGETARCH
+
+RUN apk add --no-cache ca-certificates build-base libffi-dev
+RUN pip install dns-lexicon
+
+# debug my build 
+#
+RUN ls -l 
+RUN find ./ -type d
+
+# Copy the compiled application binary into the image.
+COPY artifacts/$APP_NAME-$TARGETOS-$TARGETARCH/$APP_NAME-$TARGETOS-$TARGETARCH /usr/local/bin/webhook
+
+# Set the entrypoint for the container.
+ENTRYPOINT ["webhook"]
