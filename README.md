@@ -83,16 +83,23 @@ help with any troubleshooting.
 
 ## Installation
 
+### local install from repo
+
+```bash
+helm -n cert-manager upgrade -i dns-lexicon-webhook ./deploy/cert-manager-webhook-dns-lexicon --set groupName='dns-lexicon.mycompany.com'
+```
+
 ### Using public helm chart
 
 ```bash
-helm repo add cert-manager-webhook-dns-lexicon https://lanefu.github.io/cert-manager-webhook-dns-lexicon/
+helm repo add cert-manager-webhook-dns-lexicon <https://lanefu.github.io/cert-manager-webhook-dns-lexicon/>
 # Replace the groupName value with your desired domain
-helm install --namespace cert-manager cert-manager-webhook-dns-lexicon cert-manager-webhook-dns-lexicon/cert-manager-webhook-dns-lexicon --set groupName=acme.bunny.net
+helm install --namespace cert-manager dns-lexicon-webhook cert-manager-webhook-dns-lexicon/cert-manager-webhook-dns-lexicon --set groupName=acme.bunny.net
 ```
 
 And then create a ClusterIssuer, something like this:
 
+```yaml
     apiVersion: v1
     kind: Secret
     metadata:
@@ -130,13 +137,14 @@ And then create a ClusterIssuer, something like this:
                 ttl: 600
               groupName: dns-lexicon.company.com
               solverName: lexicon
+```
 
 You should be able to create additional ones for each DNS provider you need using this basic template. Note that some providers
 use the `--auth-password` parameter instead of `--auth-token`; in that case you need to set `usePassword: true` in the webhook
 configuration to make it work. The only way I know to check that easily is to run `lexicon <provider> --help` and check the
 available arguments, but this project does not do that for you at this time.
 
-## Original Author's Credits
+## Original Author's Note on Credits
 
 Credit where it is due, this project was based on the [cert-manager-webhook-example](https://github.com/cert-manager/webhook-example)
 project and borrowed a lot of ideas and a bit of code from the [dnsmadeeasy-webhook](https://github.com/k8s-at-home/dnsmadeeasy-webhook) webhook.
