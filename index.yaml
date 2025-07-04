@@ -1,0 +1,13 @@
+apiVersion: v1
+entries:
+  cert-manager-webhook-dns-lexicon:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2025-07-04T19:29:53.46649957Z"
+    description: dns-lexicon cert-manager webhook ACME DNS-01 solver
+    digest: 2f8cda06540deb8b3b05136615729a7b81eb0da9bbe598506f04c0bdb1d67e01
+    name: cert-manager-webhook-dns-lexicon
+    urls:
+    - https://github.com/lanefu/cert-manager-webhook-dns-lexicon/releases/download/cert-manager-webhook-dns-lexicon-1.0.2/cert-manager-webhook-dns-lexicon-1.0.2.tgz
+    version: 1.0.2
+generated: "2025-07-04T19:29:53.466504068Z"
