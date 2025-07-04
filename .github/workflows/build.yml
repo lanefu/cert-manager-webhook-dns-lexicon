@@ -4,11 +4,10 @@
 # 3. In a separate job, download the artifacts.
 # 4. Build a multi-architecture Docker image using the downloaded artifacts.
 
-name: Go Cross-Compile and Multi-Arch Docker Build
+# Go Cross-Compile and Multi-Arch Docker Build
+name: Multi-Arch Build
 
 on:
-  # schedule:
-  #   - cron: "0 4 * * 0"
   workflow_dispatch:
   pull_request:
     branches:
@@ -120,18 +119,6 @@ jobs:
 
       - name: Display downloaded artifacts structure
         run: ls -R artifacts/
-
-      # - name: Prepare build contexts
-      #   # We need to create separate directories for each architecture's build context.
-      #   # Each directory will contain the appropriate binary and a Dockerfile.
-      #   run: |
-      #     # AMD64 context
-      #     mkdir -p build-context/linux-amd64
-      #     cp artifacts/cert-manager-webhook-dns-lexicon-linux-amd64/cert-manager-webhook-dns-lexicon-linux-amd64 build-context/linux-amd64/app
-      #
-      #     # ARM64 context
-      #     mkdir -p build-context/linux-arm64
-      #     cp artifacts/cert-manager-webhook-dns-lexicon-linux-arm64/cert-manager-webhook-dns-lexicon-linux-arm64 build-context/linux-arm64/app
 
       - name: Log in to GitHub Container Registry
         # You must be logged in to a registry to push images.
