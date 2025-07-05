@@ -92,7 +92,7 @@ helm -n cert-manager upgrade -i dns-lexicon-webhook ./deploy/cert-manager-webhoo
 ### Using public helm chart
 
 ```bash
-helm repo add cert-manager-webhook-dns-lexicon <https://lanefu.github.io/cert-manager-webhook-dns-lexicon/>
+helm repo add cert-manager-webhook-dns-lexicon https://lanefu.github.io/cert-manager-webhook-dns-lexicon/
 # Replace the groupName value with your desired domain
 helm install --namespace cert-manager dns-lexicon-webhook cert-manager-webhook-dns-lexicon/cert-manager-webhook-dns-lexicon --set groupName=acme.bunny.net
 ```
